@@ -1,25 +1,31 @@
 package readability;
 
-import java.util.Scanner;
+import java.io.File;
 
 public class Main {
     public static void main(String[] args) {
-        try (var scanner = new Scanner(System.in)) {
-            String stringToEvaluate = scanner.nextLine();
-            String[] words = stringToEvaluate.split(" ");
-            int numberOfSentences = 0;
+        File file = new File(args[0]);
+//        File file = new File("in.txt");
 
-            for (int i = 0; i < words.length; i++) {
-                if (words[i].matches("\\w+[.!?]") || i == words.length - 1) {
-                    numberOfSentences++;
-                }
-            }
+        FileMeter fileMeter = new FileMeterImpl(file);
+        FileStats fileStats = fileMeter.calculateStats();
 
-            if ((double) words.length / numberOfSentences > 10) {
-                System.out.println("HARD");
-            } else {
-                System.out.println("EASY");
-            }
-        }
+        System.out.println("The text is:");
+        System.out.println(String.join(" ", fileStats.getWords()));
+
+        ScoreAnalyzer scoreAnalyzer = new BasicScoreAnalyzer();
+        double score = scoreAnalyzer.analyze(fileStats);
+        String scoreGradeAgeRelation = ScoreAnalyzer.getScoreGradeRelation(score);
+
+        System.out.printf("%nWords: %d%n" +
+                "Sentences: %d%n" +
+                "Characters: %d%n" +
+                "The score is: %.2f%n" +
+                "This text should be understood by %s year-olds.%n",
+                fileStats.getWords().size(),
+                fileStats.getSentancesCount(),
+                fileStats.getCharsCount(),
+                score,
+                scoreGradeAgeRelation);
     }
 }
