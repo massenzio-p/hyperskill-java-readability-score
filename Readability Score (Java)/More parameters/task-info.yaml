@@ -424,6 +424,161 @@ files:
           }
       }
     learner_created: false
+  - name: src/readability/meter/FileMeterImpl.java
+    visible: true
+    text: |
+      package readability;
+      
+      import java.io.File;
+      import java.io.FileNotFoundException;
+      import java.util.List;
+      import java.util.Scanner;
+      import java.util.stream.Collectors;
+      
+      public class FileMeterImpl implements FileMeter {
+          private final File file;
+      
+          public FileMeterImpl(File file) {
+              this.file = file;
+          }
+      
+          @Override
+          public FileStats calculateStats() {
+              try (var fileScanner = new Scanner(file).useDelimiter("\\s+")) {
+                  int sentences = 0;
+                  int chars = 0;
+      
+                  List<String> words = fileScanner.tokens()
+                          .collect(Collectors.toList());
+      
+                  for (int i = 0; i < words.size(); i++) {
+                      String word = words.get(i);
+                      chars += word.length();
+                      if (word.matches("\\w+[.!?]") || i == words.size() - 1) {
+                          sentences++;
+                      }
+                  }
+      
+                  return new FileStats(words, sentences, chars);
+              } catch (FileNotFoundException e) {
+                  throw new RuntimeException("Something went wrong");
+              }
+          }
+      }
+    learner_created: true
+  - name: src/readability/score/ScoreAnalyzer.java
+    visible: true
+    text: |
+      package readability;
+      
+      public interface ScoreAnalyzer {
+      
+          String[] GRADE_AGES = {
+              "5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12-13",
+                  "13-14", "14-15", "15-16", "16-17", "17-18", "18-22"
+          };
+      
+          static String getScoreGradeRelation(double score) {
+              return GRADE_AGES[(int) Math.ceil(score) - 1];
+          }
+      
+          double analyze(FileStats fileStats);
+      }
+    learner_created: true
+  - name: src/readability/score/CompoundScoreAnalyzer.java
+    visible: true
+    text: |
+      package readability;
+      
+      public class BasicScoreAnalyzer implements ScoreAnalyzer {
+          @Override
+          public double analyze(FileStats fileStats) {
+              double chars = fileStats.getCharsCount();
+              double sentences = fileStats.getSentancesCount();
+              double words = fileStats.getWords().size();
+      
+              return 4.71D * chars / words + 0.5D * words / sentences - 21.43D;
+          }
+      }
+    learner_created: true
+  - name: src/readability/FileStats.java
+    visible: true
+    text: |
+      package readability;
+      
+      import java.util.Collection;
+      
+      public class FileStats {
+          private final Collection<String> words;
+          private final int sentancesCount;
+          private final int charsCount;
+      
+          public FileStats(Collection<String> words, int sentences, int chars) {
+              this.words = words;
+              this.sentancesCount = sentences;
+              this.charsCount = chars;
+          }
+      
+          public Collection<String> getWords() {
+              return words;
+          }
+      
+          public int getSentancesCount() {
+              return sentancesCount;
+          }
+      
+          public int getCharsCount() {
+              return charsCount;
+          }
+      }
+    learner_created: true
+  - name: src/readability/meter/FileMeter.java
+    visible: true
+    text: |
+      package readability;
+      
+      public interface FileMeter {
+      
+          FileStats calculateStats();
+      }
+    learner_created: true
+  - name: src/readability/score/ScoreAlg.java
+    visible: true
+    learner_created: true
+  - name: src/readability/score/ScoreAnalyzerFactory.java
+    visible: true
+    learner_created: true
+  - name: src/readability/score/DefaultScoreAnalyzerFactory.java
+    visible: true
+    learner_created: true
+  - name: src/readability/score/FleschKincaidAnalyzer.java
+    visible: true
+    learner_created: true
+  - name: src/readability/score/SmogAnalyzer.java
+    visible: true
+    learner_created: true
+  - name: src/readability/score/ColemanLiauAnalyzer.java
+    visible: true
+    learner_created: true
+  - name: src/readability/score/ScorePrinter.java
+    visible: true
+    learner_created: true
+  - name: src/readability/score/DefaultScorePrinter.java
+    visible: true
+    learner_created: true
+  - name: src/readability/score/AutomatedReadabilityAnalyzer.java
+    visible: true
+    learner_created: true
+  - name: src/readability/grade/Grader.java
+    visible: true
+    learner_created: true
+  - name: src/readability/grade/DefaultGrader.java
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5265#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Well done! You've finished the project. Select a new project on <a href="https://hyperskill.org/projects">Hyperskill</a>
+    to continue learning.
+  time: "Fri, 16 Feb 2024 18:41:22 UTC"
 record: -1
